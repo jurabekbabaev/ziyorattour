@@ -7,7 +7,7 @@ OUT=ROOT/'dist'
 BASE='https://ziyorattour.uz'
 template=(ROOT/'template.html').read_text()
 css=re.search(r'<style>(.*?)</style>',template,re.S).group(1)
-(OUT/'assets/site.css').write_text(css+'\n.program{max-width:850px;margin:auto}.program h1{font-size:52px}.program p,.program li{line-height:1.85}.program img{width:100%;max-height:420px;object-fit:cover;border-radius:14px}.program .breadcrumb{font-size:14px;margin-bottom:30px}.program .actions{margin-top:35px}.program h2{font-size:30px;margin-top:35px}.program ul{padding-left:22px}.program .notice{background:#f2f7f0;padding:24px;border-left:3px solid #42a834}.program .eyebrow{color:#26781d}@media(max-width:650px){.program h1{font-size:40px}}')
+(OUT/'assets/site.css').write_text(css.replace("url('assets/","url('")+'\n.program{max-width:850px;margin:auto}.program h1{font-size:52px}.program p,.program li{line-height:1.85}.program img{width:100%;max-height:420px;object-fit:cover;border-radius:14px}.program .breadcrumb{font-size:14px;margin-bottom:30px}.program .actions{margin-top:35px}.program h2{font-size:30px;margin-top:35px}.program ul{padding-left:22px}.program .notice{background:#f2f7f0;padding:24px;border-left:3px solid #42a834}.program .eyebrow{color:#26781d}@media(max-width:650px){.program h1{font-size:40px}}')
 (OUT/'assets/site.js').write_text('''const menu=document.querySelector('.menu'),nav=document.getElementById('nav');if(menu&&nav){menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(open));});nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false');}));}const year=document.getElementById('year');if(year)year.textContent=new Date().getFullYear();''')
 with (OUT/'assets/site.js').open('a') as js: js.write('\n'+(ROOT/'request.js').read_text())
 # Images are re-encoded without changing their content or composition.
@@ -140,3 +140,11 @@ credits=OUT/'photo-credits.html';c=credits.read_text();
 if 'name="robots"' not in c:c=c.replace('<title>','<meta name="robots" content="noindex,follow"><title>')
 credits.write_text(c)
 print('Built',len(urls),'indexable, fully rendered pages.')
+
+# GitHub Pages: no .htaccess, so old addresses get small redirect pages (canonical + meta refresh).
+REDIRECTS={'uz':'/','blog-1/ru':'/ru/umra-standart/','blog-1/uz':'/uz/umra-standart/','blog-2/ru':'/ru/umra-komfort/','blog-2/uz':'/uz/umra-komfort/','blog-3/ru':'/ru/umra-vip/','blog-3/uz':'/uz/umra-vip/'}
+for old,new in REDIRECTS.items():
+ target=OUT/old/'index.html';target.parent.mkdir(parents=True,exist_ok=True)
+ target.write_text(f'<!doctype html><meta charset="utf-8"><title>Ziyorat Tour</title><link rel="canonical" href="{BASE}{new}"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url={new}"><a href="{new}">Ziyorat Tour</a>')
+(OUT/'CNAME').write_text('ziyorattour.uz\n')
+(OUT/'.nojekyll').write_text('')

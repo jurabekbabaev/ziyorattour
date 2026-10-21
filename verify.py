@@ -6,7 +6,9 @@ root=Path(__file__).parent/'dist'
 errors=[];titles=set();n=0
 for p in root.rglob('*.html'):
  if p.name in ['404.html','photo-credits.html']:continue
- doc=html.fromstring(p.read_text());n+=1
+ doc=html.fromstring(p.read_text())
+ if doc.xpath('//meta[@http-equiv="refresh"]'):continue  # redirect stub for old URLs
+ n+=1
  title=doc.findtext('.//title');assert title and title not in titles,(p,'title');titles.add(title)
  assert len(doc.xpath('//h1'))==1,(p,'h1')
  assert len(doc.xpath('//link[@rel="canonical"]'))==1,(p,'canonical')
